@@ -1,0 +1,7 @@
+{
+  "letsEncryptPath": "/etc/letsencrypt",
+  "nginxPath": "/etc/nginx",
+
+  "bindAddress": "0.0.0.0",
+  "socketPort": 5600
+}
