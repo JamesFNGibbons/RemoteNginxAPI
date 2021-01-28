@@ -206,7 +206,7 @@ class NginxAutomationApi {
         return new Promise((resolve, reject) => {
           const sudo = config.executeAsSudo? config.executeAsSudo: '';
           exec(`${sudo} service nginx reload`, (err, stderr, stdout) => {
-            
+
             if(err) throw err;
             else if(stderr) {
               console.log('Service NGINX reload returned the following error: ');
@@ -328,7 +328,7 @@ class NginxAutomationApi {
       ];
 
       const nginxSites = fs.readdirSync(`${config.nginxPath}/sites-enabled`);
-      for(let site in nginxSites) {
+      for(let site of nginxSites) {
         data.push([site, `${config.nginxPath}/sites-enabled/${site}`]);
       }
         
