@@ -81,10 +81,26 @@ class NginxAutomationApi {
 
         socketClient.on('data', async (data) => {
           console.log(`Command received from ${socketClient.remoteAddress}`);
-          const cmdResponse = await this.dispatchCommandRequest(data.toString());
 
-          socketClient.write(JSON.stringify(cmdResponse));
-          socketClient.end();
+          const dataCommmandRequest = JSON.parse(data);
+          if(dataCommmandRequest.command) {    
+            const cmdResponse = await this.dispatchCommandRequest(JSON.parse(data));
+
+            socketClient.write(JSON.stringify(cmdResponse));
+            socketClient.end();
+
+          }
+          else {
+            console.log('Invalid command request was presented to server. This will be rejected.');
+            const invalidCommandResponse = {
+              status: 'err',
+              message: 'Invalid command presented.'
+            };
+
+            socketClient.write(JSON.stringify(invalidCommandResponse));
+            socketClient.end();
+
+          }
 
         });
 
@@ -116,7 +132,7 @@ class NginxAutomationApi {
    * @memberof NginxAutomationApi
    */
   async dispatchCommandRequest(request) {
-    switch(request) {
+    switch(request.command ) {
       case('heartbeat-status'):
         return {status: 'alive', time: new Date()};
       break;
@@ -124,9 +140,19 @@ class NginxAutomationApi {
       case('create-site'):
         if(this.isLetsEncryptInstalled()) {
           console.log('Creating new site with LetsEncrypt certificate.');
+          const response = await this.createSiteWithSSL(request.data);
+
+          return response;
+
         }
         else {
           console.log('Creatirng new site without LetsEncrypt certificate.');
+          const response = await this.createSiteWithoutSSL(request.data);
+
+          console.log(response);
+          
+          return response;
+
         }
       break;
 
@@ -141,7 +167,7 @@ class NginxAutomationApi {
    * @param {*} domain
    * @memberof NginxAutomationApi
    */
-  async doesNginxSiteExist(domain) {
+  doesNginxSiteExist(domain) {
     if(fs.existsSync(`${config.nginxPath}/sites-enabled/${domain}`)) {
       return true;
     }
@@ -177,37 +203,39 @@ class NginxAutomationApi {
         fs.writeFileSync(`${config.nginxPath}/sites-enabled/${siteData.domain}`, siteTemplate);
 
         // attempt to reload the NGINX web server service.
-        const sudo = config.executeAsSudo? config.executeAsSudo: '';
-        exec(`${sudo} service nginx reload`, (err, stderr, stdout) => {
-          if(err) throw err;
-          else if(stderr) {
-            console.log('Service NGINX reload returned the following error: ');
-            console.error(stderr);
-
-            return {
-              status: 'err',
-              message: 'Could not reload NGINX service.',
-              errors: [
-                {
-                  unknown: stderr
-                }
-              ]
-            };
-          }
-          else {
-            if(stdout) {
-              console.log('Output from service NGINX reload:');
-              console.log(stdout);
+        return new Promise((resolve, reject) => {
+          const sudo = config.executeAsSudo? config.executeAsSudo: '';
+          exec(`${sudo} service nginx reload`, (err, stderr, stdout) => {
+            
+            if(err) throw err;
+            else if(stderr) {
+              console.log('Service NGINX reload returned the following error: ');
+              console.error(stderr);
+  
+              resolve({
+                status: 'err',
+                message: 'Could not reload NGINX service.',
+                errors: [
+                  {
+                    unknown: stderr
+                  }
+                ]
+              });
             }
-
-            return {
-              status: 'ok',
-              time: new Date()
-            };
-          }
-        });
+            else {
+              if(stdout) {
+                console.log('Output from service NGINX reload:');
+                console.log(stdout);
+              }
+  
+              revolve({
+                status: 'ok',
+                time: new Date()
+              });
+            }
+          });
+        })
       }
-      
     }
     else {
       return {
@@ -225,7 +253,59 @@ class NginxAutomationApi {
    */
   async createSiteWithoutSSL(siteData) {
     if(siteData.domain && siteData.upstream) {
+      if(this.doesNginxSiteExist(siteData.domain)) {
+        return {
+          status: 'err',
+          errors: {
+            domainExists: true
+          },
+          message: 'This site already exists.'
+        }
 
+      }
+      else {
+        let siteTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
+        siteTemplate.replace('@@@domain@@@', siteData.domain);
+        siteTemplate.replace('@@@upstream@@@', siteData.upstream);
+
+        // write the new site file
+        fs.writeFileSync(`${config.nginxPath}/sites-enabled/${siteData.domain}`, siteTemplate);
+
+        // attempt to reload the NGINX web server service.
+        return new Promise((resolve, reject) => {
+          const sudo = config.executeAsSudo? config.executeAsSudo: '';
+          exec(`${sudo} service nginx reload`, (err, stderr, stdout) => {
+
+            if(err) throw err;
+            else if(stderr) {
+              console.log('Service NGINX reload returned the following error: ');
+              console.error(stderr);
+  
+              resolve({
+                status: 'err',
+                message: 'Could not reload NGINX service.',
+                errors: [
+                  {
+                    unknown: stderr
+                  }
+                ]
+              });
+            }
+            else {
+              if(stdout) {
+                console.log('Output from service NGINX reload:');
+                console.log(stdout);
+              }
+  
+              resolve({
+                status: 'ok',
+                time: new Date()
+              });
+            }
+          });
+        });
+      }
+      
     }
     else {
       return {
