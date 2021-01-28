@@ -1,6 +1,7 @@
 const fs = require('fs');
 const net = require('net');
 const table = require('table').table;
+const exec = require('child_process').exec;
 const config = require('./config.json');
 
 class NginxAutomationApi {
@@ -131,6 +132,106 @@ class NginxAutomationApi {
 
       default:
         return {status: 'err', message: 'Invalid request.'};
+    }
+  }
+
+  /**
+   *
+   *
+   * @param {*} domain
+   * @memberof NginxAutomationApi
+   */
+  async doesNginxSiteExist(domain) {
+    if(fs.existsSync(`${config.nginxPath}/sites-enabled/${domain}`)) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
+  /**
+   *
+   *
+   * @param {*} siteData
+   * @memberof NginxAutomationApi
+   */
+  async createSiteWithSSL(siteData) {
+    if(siteData.domain && siteData.upstream) {
+      if(this.doesNginxSiteExist(siteData.domain)) {
+        return {
+          status: 'err',
+          errors: {
+            domainExists: true
+          },
+          message: 'This site already exists.'
+        }
+
+      }
+      else {
+        let siteTemplate = fs.readFileSync(__dirname + '/site-templates/default');
+        siteTemplate.replace('@@@domain@@@', siteData.domain);
+        siteTemplate.replace('@@@upstream@@@', siteData.upstream);
+
+        // write the new site file
+        fs.writeFileSync(`${config.nginxPath}/sites-enabled/${siteData.domain}`, siteTemplate);
+
+        // attempt to reload the NGINX web server service.
+        const sudo = config.executeAsSudo? config.executeAsSudo: '';
+        exec(`${sudo} service nginx reload`, (err, stderr, stdout) => {
+          if(err) throw err;
+          else if(stderr) {
+            console.log('Service NGINX reload returned the following error: ');
+            console.error(stderr);
+
+            return {
+              status: 'err',
+              message: 'Could not reload NGINX service.',
+              errors: [
+                {
+                  unknown: stderr
+                }
+              ]
+            };
+          }
+          else {
+            if(stdout) {
+              console.log('Output from service NGINX reload:');
+              console.log(stdout);
+            }
+
+            return {
+              status: 'ok',
+              time: new Date()
+            };
+          }
+        });
+      }
+      
+    }
+    else {
+      return {
+        status: 'err',
+        message: 'siteData must include domain and upstream'
+      };
+    }
+  }
+
+  /**
+   *
+   *
+   * @param {*} siteData
+   * @memberof NginxAutomationApi
+   */
+  async createSiteWithoutSSL(siteData) {
+    if(siteData.domain && siteData.upstream) {
+
+    }
+    else {
+      return {
+        status: 'err',
+        message: 'siteData must include domain and upstream'
+      };
     }
   }
 
