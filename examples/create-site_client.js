@@ -1,6 +1,6 @@
 const net = require('net');
 
-const NGINX_API_ADDRESS = '127.0.0.1';
+const NGINX_API_ADDRESS = '172.168.0.3';
 const NGINX_API_PORT = 5600;
 
 // the command to execute on the remote API

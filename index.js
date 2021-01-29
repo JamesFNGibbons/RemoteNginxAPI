@@ -195,7 +195,7 @@ class NginxAutomationApi {
 
       }
       else {
-        let siteTemplate = fs.readFileSync(__dirname + '/site-templates/default');
+        let siteTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
         siteTemplate.replace('@@@domain@@@', siteData.domain);
         siteTemplate.replace('@@@upstream@@@', siteData.upstream);
 
