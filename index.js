@@ -268,13 +268,13 @@ class NginxAutomationApi {
         siteTemplate = siteTemplate.replace('@@@domain@@@', siteData.domain);
         siteTemplate = siteTemplate.replace('@@@upstream@@@', siteData.upstream);
 
-        let siteWwwTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
-        siteWwwTemplate = siteWwwTemplate.replace('@@@domain@@@', `www.${siteData.domain}`);
-        siteWwwTemplate = siteWwwTemplate.replace('@@@upstream@@@', siteData.upstream);
+        // let siteWwwTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
+        // siteWwwTemplate = siteWwwTemplate.replace('@@@domain@@@', `www.${siteData.domain}`);
+        // siteWwwTemplate = siteWwwTemplate.replace('@@@upstream@@@', siteData.upstream);
 
         // write the new site file
         fs.writeFileSync(`${config.nginxPath}/sites-enabled/${siteData.domain}`, siteTemplate);
-        fs.writeFileSync(`${config.nginxPath}/sites-enabled/www.${siteData.domain}`, siteWwwTemplate);
+        // fs.writeFileSync(`${config.nginxPath}/sites-enabled/www.${siteData.domain}`, siteWwwTemplate);
 
         // attempt to reload the NGINX web server service.
         return new Promise((resolve, reject) => {
