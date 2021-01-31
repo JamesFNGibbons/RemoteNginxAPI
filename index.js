@@ -268,8 +268,13 @@ class NginxAutomationApi {
         siteTemplate.replace('@@@domain@@@', siteData.domain);
         siteTemplate.replace('@@@upstream@@@', siteData.upstream);
 
+        let siteWwwTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
+        siteTemplate.replace('@@@domain@@@', `www.${siteData.domain}`);
+        siteTemplate.replace('@@@upstream@@@', siteData.upstream);
+
         // write the new site file
         fs.writeFileSync(`${config.nginxPath}/sites-enabled/${siteData.domain}`, siteTemplate);
+        fs.writeFileSync(`${config.nginxPath}/sites-enabled/www.${siteData.domain}`, siteTemplate);
 
         // attempt to reload the NGINX web server service.
         return new Promise((resolve, reject) => {
@@ -297,9 +302,35 @@ class NginxAutomationApi {
                 console.log(stdout);
               }
   
-              resolve({
-                status: 'ok',
-                time: new Date()
+              // attempt to install the lets encrypt SSL certificate.
+              console.log('Installing the SSL certificate.');
+              exec(`${sudo} certbot certonly --noninteractive --webroot --agree-tos --register-unsafely-without-email -d ${siteData.domain}`, (err, stdErr, stdOuut) => {
+                if(err) throw err;
+                else if(stdErr) {
+                  console.log('SSL certificate generation and installation returned the following error: ');
+                  console.error(stdErr);
+
+                }
+                else {
+                  console.log(`Installing the SSL certificate on the www. hostfile of ${siteData.domain}`);
+                  exec(`${sudo} certbot certonly --noninteractive --webroot --agree-tos --register-unsafely-without-email -d www.${siteData.domain}`, (err, stdErr, stdOuut) => {
+                    if(err) throw err;
+                    else if(stdErr) {
+                    console.log('SSL certificate generation and installation returned the following error: ');
+                    console.error(stdErr);
+
+                    }
+                    else {
+                      console.log(`Done creating and configuring websites ${siteData.domain} and www.${siteData.domain}`);
+
+                      resolve({
+                        status: 'ok',
+                        time: new Date()
+                      });
+                    }
+                  });
+
+                }
               });
             }
           });
