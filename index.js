@@ -274,7 +274,7 @@ class NginxAutomationApi {
 
         // write the new site file
         fs.writeFileSync(`${config.nginxPath}/sites-enabled/${siteData.domain}`, siteTemplate);
-        fs.writeFileSync(`${config.nginxPath}/sites-enabled/www.${siteData.domain}`, siteTemplate);
+        fs.writeFileSync(`${config.nginxPath}/sites-enabled/www.${siteData.domain}`, siteWwwTemplate);
 
         // attempt to reload the NGINX web server service.
         return new Promise((resolve, reject) => {
