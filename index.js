@@ -182,7 +182,7 @@ class NginxAutomationApi {
    * @param {*} siteData
    * @memberof NginxAutomationApi
    */
-  async createSiteWithSSL(siteData) {
+  async createSiteWithoutSSL(siteData) {
     if(siteData.domain && siteData.upstream) {
       if(this.doesNginxSiteExist(siteData.domain)) {
         return {
@@ -196,8 +196,8 @@ class NginxAutomationApi {
       }
       else {
         let siteTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
-        siteTemplate.replace('@@@domain@@@', siteData.domain);
-        siteTemplate.replace('@@@upstream@@@', siteData.upstream);
+        siteTemplate = siteTemplate.replace('@@@domain@@@', siteData.domain);
+        siteTemplate = siteTemplate.replace('@@@upstream@@@', siteData.upstream);
 
         // write the new site file
         fs.writeFileSync(`${config.nginxPath}/sites-enabled/${siteData.domain}`, siteTemplate);
@@ -251,7 +251,7 @@ class NginxAutomationApi {
    * @param {*} siteData
    * @memberof NginxAutomationApi
    */
-  async createSiteWithoutSSL(siteData) {
+  async createSiteWithSSL(siteData) {
     if(siteData.domain && siteData.upstream) {
       if(this.doesNginxSiteExist(siteData.domain)) {
         return {
@@ -265,12 +265,12 @@ class NginxAutomationApi {
       }
       else {
         let siteTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
-        siteTemplate.replace('@@@domain@@@', siteData.domain);
-        siteTemplate.replace('@@@upstream@@@', siteData.upstream);
+        siteTemplate = siteTemplate.replace('@@@domain@@@', siteData.domain);
+        siteTemplate = siteTemplate.replace('@@@upstream@@@', siteData.upstream);
 
         let siteWwwTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
-        siteTemplate.replace('@@@domain@@@', `www.${siteData.domain}`);
-        siteTemplate.replace('@@@upstream@@@', siteData.upstream);
+        siteWwwTemplate = siteWwwTemplate.replace('@@@domain@@@', `www.${siteData.domain}`);
+        siteWwwTemplate = siteWwwTemplate.replace('@@@upstream@@@', siteData.upstream);
 
         // write the new site file
         fs.writeFileSync(`${config.nginxPath}/sites-enabled/${siteData.domain}`, siteTemplate);
