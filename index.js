@@ -228,7 +228,7 @@ class NginxAutomationApi {
                 console.log(stdout);
               }
   
-              revolve({
+              resolve({
                 status: 'ok',
                 time: new Date()
               });

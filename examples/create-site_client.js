@@ -5,8 +5,8 @@ const NGINX_API_PORT = 5600;
 
 // the command to execute on the remote API
 const COMMAND = 'create-site';
-const DOMAIN = 'test.local';
-const UPSTREAM = 'http://test';
+const DOMAIN = 'test.flipweb.co.uk';
+const UPSTREAM = 'http://flipNG';
 
 async function startExample() {
   try {
