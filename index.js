@@ -197,6 +197,7 @@ class NginxAutomationApi {
       else {
         let siteTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
         siteTemplate = siteTemplate.replace('@@@domain@@@', siteData.domain);
+        siteTemplate = siteTemplate.replace('@@@wwwDomain@@@', siteData.domain);
         siteTemplate = siteTemplate.replace('@@@upstream@@@', siteData.upstream);
 
         // write the new site file
@@ -266,15 +267,11 @@ class NginxAutomationApi {
       else {
         let siteTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
         siteTemplate = siteTemplate.replace('@@@domain@@@', siteData.domain);
+        siteTemplate = siteTemplate.replace('@@@wwwDomain@@@', siteData.domain);
         siteTemplate = siteTemplate.replace('@@@upstream@@@', siteData.upstream);
-
-        // let siteWwwTemplate = fs.readFileSync(__dirname + '/site-templates/default').toString();
-        // siteWwwTemplate = siteWwwTemplate.replace('@@@domain@@@', `www.${siteData.domain}`);
-        // siteWwwTemplate = siteWwwTemplate.replace('@@@upstream@@@', siteData.upstream);
 
         // write the new site file
         fs.writeFileSync(`${config.nginxPath}/sites-enabled/${siteData.domain}`, siteTemplate);
-        // fs.writeFileSync(`${config.nginxPath}/sites-enabled/www.${siteData.domain}`, siteWwwTemplate);
 
         // attempt to reload the NGINX web server service.
         return new Promise((resolve, reject) => {
@@ -304,7 +301,7 @@ class NginxAutomationApi {
   
               // attempt to install the lets encrypt SSL certificate.
               console.log('Installing the SSL certificate.');
-              exec(`${sudo} certbot certonly --noninteractive --webroot --agree-tos --register-unsafely-without-email -d ${siteData.domain}`, (err, stdErr, stdOuut) => {
+              exec(`${sudo} certbot --noninteractive --nginx --agree-tos --register-unsafely-without-email -d ${siteData.domain}`, (err, stdErr, stdOuut) => {
                 if(err) throw err;
                 else if(stdErr) {
                   console.log('SSL certificate generation and installation returned the following error: ');
@@ -313,7 +310,7 @@ class NginxAutomationApi {
                 }
                 else {
                   console.log(`Installing the SSL certificate on the www. hostfile of ${siteData.domain}`);
-                  exec(`${sudo} certbot certonly --noninteractive --webroot --agree-tos --register-unsafely-without-email -d www.${siteData.domain}`, (err, stdErr, stdOuut) => {
+                  exec(`${sudo} certbot --noninteractive --nginx --agree-tos --register-unsafely-without-email -d www.${siteData.domain}`, (err, stdErr, stdOuut) => {
                     if(err) throw err;
                     else if(stdErr) {
                     console.log('SSL certificate generation and installation returned the following error: ');
