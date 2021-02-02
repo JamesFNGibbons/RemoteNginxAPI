@@ -307,6 +307,16 @@ class NginxAutomationApi {
                   console.log('SSL certificate generation and installation returned the following error: ');
                   console.error(stdErr);
 
+                  resolve({
+                    status: 'err',
+                    message: 'Could not reload NGINX service.',
+                    errors: [
+                      {
+                        unknown: stderr
+                      }
+                    ]
+                  });
+
                 }
                 else {
                   console.log(`Installing the SSL certificate on the www. hostfile of ${siteData.domain}`);
