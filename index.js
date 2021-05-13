@@ -147,7 +147,7 @@ class NginxAutomationApi {
           console.log('Lets encrypt is not installed, so cannot reissue SSL at request.');
           return {
             status: 'err',
-            message: 'Lets Encrypt is not installed on NGINX server.';
+            message: 'Lets Encrypt is not installed on NGINX server.'
           };
 
         }
