@@ -363,21 +363,21 @@ class NginxAutomationApi {
               console.log('Installing the SSL certificate.');
               exec(`${sudo} certbot --noninteractive --nginx --agree-tos --register-unsafely-without-email -d ${siteData.domain}`, (err, stdout, stderr) => {
                 if(err) throw err;
-                else if(stderr) {
-                  console.log('SSL certificate generation and installation returned the following error: ');
-                  console.error(stderr);
+                // else if(stderr) {
+                //   console.log('SSL certificate generation and installation returned the following error: ');
+                //   console.error(stderr);
 
-                  resolve({
-                    status: 'err',
-                    message: 'Could not reload NGINX service.',
-                    errors: [
-                      {
-                        unknown: stderr
-                      }
-                    ]
-                  });
+                //   resolve({
+                //     status: 'err',
+                //     message: 'Could not generate SSL cerficiate. Error Code 1.',
+                //     errors: [
+                //       {
+                //         unknown: stderr
+                //       }
+                //     ]
+                //   });
 
-                }
+                // }
                 else {
                   console.log(`Installing the SSL certificate on the www. hostfile of ${siteData.domain}`);
                   exec(`${sudo} certbot --noninteractive --nginx --agree-tos --register-unsafely-without-email -d www.${siteData.domain}`, (err, stdout, stderr) => {
