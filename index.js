@@ -383,11 +383,11 @@ class NginxAutomationApi {
                   exec(`${sudo} certbot --noninteractive --nginx --agree-tos --register-unsafely-without-email -d www.${siteData.domain}`, (err, stdout, stderr) => {
                     if(err) throw err;
 
-                    else if(stderr) {
-                    console.log('SSL certificate generation and installation returned the following error: ');
-                    console.error(stderr);
+                    // else if(stderr) {
+                    // console.log('SSL certificate generation and installation returned the following error: ');
+                    // console.error(stderr);
 
-                    }
+                    // }
                     else {
                       console.log(`Done creating and configuring websites ${siteData.domain} and www.${siteData.domain}`);
 
