@@ -184,12 +184,14 @@ class NginxAutomationApi {
    * @memberof NginxAutomationApi
    */
   doesNginxSiteExist(domain) {
-    if(fs.existsSync(`${config.nginxPath}/sites-enabled/${domain}`)) {
-      return true;
-    }
-    else {
-      return false;
-    }
+    return false;
+
+    // if(fs.existsSync(`${config.nginxPath}/sites-enabled/${domain}`)) {
+    //   return true;
+    // }
+    // else {
+    //   return false;
+    // }
   }
 
   /**
@@ -311,7 +313,8 @@ class NginxAutomationApi {
    */
   async createSiteWithSSL(siteData) {
     if(siteData.domain && siteData.upstream) {
-      if(this.doesNginxSiteExist(siteData.domain)) {
+      // if(this.doesNginxSiteExist(siteData.domain)) {
+      if(false) {
         return {
           status: 'err',
           errors: {
@@ -358,11 +361,11 @@ class NginxAutomationApi {
   
               // attempt to install the lets encrypt SSL certificate.
               console.log('Installing the SSL certificate.');
-              exec(`${sudo} certbot --noninteractive --nginx --agree-tos --register-unsafely-without-email -d ${siteData.domain}`, (err, stdErr, stdOuut) => {
+              exec(`${sudo} certbot --noninteractive --nginx --agree-tos --register-unsafely-without-email -d ${siteData.domain}`, (err, stdout, stderr) => {
                 if(err) throw err;
-                else if(stdErr) {
+                else if(stderr) {
                   console.log('SSL certificate generation and installation returned the following error: ');
-                  console.error(stdErr);
+                  console.error(stderr);
 
                   resolve({
                     status: 'err',
@@ -377,11 +380,12 @@ class NginxAutomationApi {
                 }
                 else {
                   console.log(`Installing the SSL certificate on the www. hostfile of ${siteData.domain}`);
-                  exec(`${sudo} certbot --noninteractive --nginx --agree-tos --register-unsafely-without-email -d www.${siteData.domain}`, (err, stdErr, stdOuut) => {
+                  exec(`${sudo} certbot --noninteractive --nginx --agree-tos --register-unsafely-without-email -d www.${siteData.domain}`, (err, stdout, stderr) => {
                     if(err) throw err;
-                    else if(stdErr) {
+
+                    else if(stderr) {
                     console.log('SSL certificate generation and installation returned the following error: ');
-                    console.error(stdErr);
+                    console.error(stderr);
 
                     }
                     else {
