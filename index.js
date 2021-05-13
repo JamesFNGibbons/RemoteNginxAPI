@@ -186,12 +186,12 @@ class NginxAutomationApi {
   doesNginxSiteExist(domain) {
     return false;
 
-    // if(fs.existsSync(`${config.nginxPath}/sites-enabled/${domain}`)) {
-    //   return true;
-    // }
-    // else {
-    //   return false;
-    // }
+    if(fs.existsSync(`${config.nginxPath}/sites-enabled/${domain}`)) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   /**
@@ -265,7 +265,7 @@ class NginxAutomationApi {
         // attempt to reload the NGINX web server service.
         return new Promise((resolve, reject) => {
           const sudo = config.executeAsSudo? config.executeAsSudo: '';
-          exec(`${sudo} service nginx reload`, (err, stderr, stdout) => {
+          exec(`${sudo} service nginx reload`, (err, stdout, stderr) => {
 
             if(err) throw err;
             else if(stderr) {
@@ -336,7 +336,7 @@ class NginxAutomationApi {
         // attempt to reload the NGINX web server service.
         return new Promise((resolve, reject) => {
           const sudo = config.executeAsSudo? 'sudo': '';
-          exec(`${sudo} service nginx reload`, (err, stderr, stdout) => {
+          exec(`${sudo} service nginx reload`, (err, stdout, stderr) => {
 
             if(err) throw err;
             else if(stderr) {
