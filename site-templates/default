@@ -1,5 +1,5 @@
   server {
-    listen 80;
+    listen 443 ssl;
 
     server_name @@@domain@@@;
     server_name www.@@@wwwDomain@@@;
