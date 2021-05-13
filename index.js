@@ -137,6 +137,22 @@ class NginxAutomationApi {
         return {status: 'alive', time: new Date()};
       break;
 
+      case('reinstall-ssl'):
+        if(this.isLetsEncryptInstalled()) {
+          console.log(`Reinstalling SSL certificate form domain ${request.data.domain}`);
+          
+
+        }
+        else {
+          console.log('Lets encrypt is not installed, so cannot reissue SSL at request.');
+          return {
+            status: 'err',
+            message: 'Lets Encrypt is not installed on NGINX server.';
+          };
+
+        }
+      break;
+
       case('create-site'):
         if(this.isLetsEncryptInstalled()) {
           console.log('Creating new site with LetsEncrypt certificate.');
@@ -174,6 +190,47 @@ class NginxAutomationApi {
     else {
       return false;
     }
+  }
+
+  /**
+   *
+   *
+   * @param {*} domain
+   * @memberof NginxAutomationApi
+   */
+  async reissueLetsEncryptSSL(domain) {
+    return new Promise((resolve, reject) => {
+      try {
+        console.log(`Installing SSL for domain ${siteData.domain}`);
+        if(this.doesNginxSiteExist(siteData.domain)) {
+
+          const sudo = config.executeAsSudo? config.executeAsSudo: '';
+          exec(`${sudo} certbot --noninteractive --nginx --agree-tos --register-unsafely-without-email -d ${siteData.domain}`, (err, stdout, stderr) => {
+            if(err) {
+              throw err;
+            }
+            else {
+              console.log('Done.');
+              console.log(`Installing www. SSL for domain ${domain}`);
+            }
+          });
+
+        }
+        else {
+          console.log(`Domain ${domain} does not exist. Cannot install SSL.`);
+          resolve({
+            status: 'err',
+            message: 'Cannot re install SSL certificate on site that does not exist.'
+          });
+
+        }
+      }
+      catch(error) {
+        console.error(err);
+        reject(err);
+
+      }
+    });
   }
 
   /**
@@ -275,7 +332,7 @@ class NginxAutomationApi {
 
         // attempt to reload the NGINX web server service.
         return new Promise((resolve, reject) => {
-          const sudo = config.executeAsSudo? config.executeAsSudo: '';
+          const sudo = config.executeAsSudo? 'sudo': '';
           exec(`${sudo} service nginx reload`, (err, stderr, stdout) => {
 
             if(err) throw err;
